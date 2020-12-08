@@ -8,50 +8,54 @@ namespace Automat_de_vanzari
 {
     class Program
     {
-        
+
         static void Main(string[] args)
         {
-            int cent = 0, sumaCent = 0;
-            Boolean b = false;
-            Console.WriteLine("Va rog sa puneti centuri(nickel,dime,quarter only)!20 cent trebuie pentru a cumpara o cafea!");
-            Console.WriteLine();
-            while (!b || sumaCent < 20) // citire centuri
+            string coins;
+            string productOrRest;
+            int coinsState = 0;
+
+            while(true)
             {
-                try
+                coins = Console.ReadLine().ToUpper();
+                if (coins == "N")
+                    coinsState += 5;
+                else
+                if (coins == "D")
+                    coinsState += 10;
+                else
+                if (coins == "Q")
+                    coinsState += 25;
+                else
+                    throw new Exception("The vending machine accepts only 5,10 or 25 cents");
+
+                if(coinsState>=20)
                 {
-                    Console.WriteLine("SUMA CARE AVETI: " + sumaCent +" cent");
-                    cent = int.Parse(Console.ReadLine());
-                    b = true;
-                    if (cent % 5 != 0)
+                    if(coinsState == 40)
                     {
-                        b = false;
-                        Console.WriteLine("Va rog sa puneti inca o data!Numai nickel,dime sau quarter se poate!");
+                        Console.WriteLine("Do you want 2 products(press X if yes) or 1 product and the rest(press C if yes)?");
+                        productOrRest = Console.ReadLine().ToUpper();
+                        if(productOrRest == "X")
+                        {
+                            Console.WriteLine("Here you have the 2 products");
+                            break;
+                        }
+                        if (productOrRest == "C")
+                        {
+                            Console.WriteLine($"Here you have the 1 product and the rest : {coinsState - 20} coins");
+                            break;
+                        }
                     }
                     else
-                        sumaCent = sumaCent + cent;
+                    {
+                        Console.WriteLine($"Here you have the 1 product and the rest : {coinsState - 20} coins");
+                        break;
+                    }
                 }
-                catch (Exception e)
-                {
 
-                    Console.WriteLine(e.Message + "Va rog sa puneti inca o data!");
-                    b = false;
-                    
-
-
-                }
             }
 
-            Console.WriteLine("Poftiti cafea :)!");
-            if(sumaCent>20)
-                Console.WriteLine("REST: "+(sumaCent-20));
         }
-
-
-
-
-
-
-
     }
 
 }
