@@ -64,7 +64,7 @@ namespace OperatiCuNumereMari
             BigInteger b3 = 1;
             Console.WriteLine("La cat vrei sa ridici puterea?O sa folosim primul numar");
             puterea = int.Parse(Console.ReadLine());
-            if (puterea == 1)
+            if (puterea == 1 || puterea == 0)
                 b3 = 1;
             else
             {
