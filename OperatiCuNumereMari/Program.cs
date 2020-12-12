@@ -27,7 +27,7 @@ namespace OperatiCuNumereMari
                 else
                 {
                     ok = false;
-                    Console.WriteLine("Please write again the number!");
+                    Console.WriteLine("Please write again the number!Only use numbers!");
                 }
             }
             //second number reading
@@ -42,7 +42,7 @@ namespace OperatiCuNumereMari
                 else
                 {
                     ok = false;
-                    Console.WriteLine("Please write again the number!");
+                    Console.WriteLine("Please write again the number!Only use numbers!");
                 }
             }
 
