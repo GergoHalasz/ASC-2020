@@ -13,69 +13,75 @@ namespace Asamblor
 
         static void Main(string[] args)
         {
-            TextReader readFile = new StreamReader("data.in"); //citesc din file datele
+            TextReader readInstructionsSet = new StreamReader("data.in"); 
 
-            string line; //un string pentru citire randurilor din file
-            string bits = "00000000000000000000000000000000"; //32 bit
-            string valoarereg1 = "", valoarereg2 =""; // valoarea a doua registrii
-            StringBuilder bit = new StringBuilder(bits); // pentru schimbarea cu index 
-           
-            Regex pseudoBegin = new Regex(@"^\s*(.begin)\s*$"); //.begin test
+            string InstructionsOneByOne; 
+            string oneInstructionToAWord32bit = "00000000000000000000000000000000"; 
+            string registerNr1Value = "", registerNr2Value =""; 
             
-            Regex pseudoOrg = new Regex(@"^\s*(.org 2048)\s*$"); //.org 2048 test
+           
+            Regex checkIfPseudoOperationBeginIsInTheSet = new Regex(@"^\s*(.begin)\s*$");
+            
+            Regex goCheckIfOperationPseudoOrg2048IsInTheSet = new Regex(@"^\s*(.org 2048)\s*$"); 
 
-            Regex pseudoEnd = new Regex(@"^\s*(.end)\s*$");//.end test
+            Regex checkingPseudoOperationEndIsInTheSet = new Regex(@"^\s*(.end)\s*$");
 
-            int lineCount = LinesCount(pseudoEnd); // randuri din file si .end check
+            int howManyInstructionsAreInTheSet = countInstructionsInTheSetAndCheckPseudoOperationEnd(checkingPseudoOperationEndIsInTheSet);
+            
+            int PSEUDO_OPERATION_NOT_EXIST = -1;
 
-            if (lineCount != -1)
+            if (howManyInstructionsAreInTheSet != PSEUDO_OPERATION_NOT_EXIST)
             {
-                int[] valori = new int[lineCount]; // valori vector pentru valori care au x,y,z
-                                                   //.begin check                         
-                line = readFile.ReadLine();
-                Match matchBegin = pseudoBegin.Match(line);
+
+                int[] storeValuesThatAreInTheSet = new int[howManyInstructionsAreInTheSet]; 
+                                                                            
+                InstructionsOneByOne = readInstructionsSet.ReadLine();
+                Match pseudoOperationBeginIsInTheSet = checkIfPseudoOperationBeginIsInTheSet.Match(InstructionsOneByOne);
                 //.org 2048 check
-                line = readFile.ReadLine();
-                Match matchOrg = pseudoOrg.Match(line);
-                if (!matchBegin.Success) // if .begin is not in the first line
+                InstructionsOneByOne = readInstructionsSet.ReadLine();
+                Match pseudoOperationOrgIsInTheSet = goCheckIfOperationPseudoOrg2048IsInTheSet.Match(InstructionsOneByOne);
+                if (!pseudoOperationBeginIsInTheSet.Success) 
                     Console.WriteLine("N-ati folosit pseudooperatie .begin!");
                 else
-                    if (!matchOrg.Success) // if .org 2048 is not in the second line
+                    if (!pseudoOperationOrgIsInTheSet.Success) 
                     Console.WriteLine("N-ati folosit pseudooperatie .org 2048!");
                 else
                 {
-                    Regex Instructiune = new Regex(@"^\s*([A-z,0-9]+[:]{1}){0,1}\s*(ld|addcc|jmpl|st){1}\s*(\[\w+]|%r\d+|%r\d+\+4){1}[,]{1}\s*(\[\w+]|%r\d+){1}[,]{0,1}\s*(\[\w+]|%r\d+){0,1}\s*$");//test pentru instructiunile
-                    Regex ReaderVariabile = new Regex(@"^\s*([A-z,0-9]+){1}[:]{1}\s*(\d+)$");//test pentru valori care primesc numere(x: 20,y:15)
-
-                    for (int i = 2; i < lineCount - 1; i++)//de la 2 pana la ultima randa din file
+                    Regex checkingIfInstructionIsCorrect = new Regex(@"^\s*([A-z,0-9]+[:]{1}){0,1}\s*(ld|addcc|jmpl|st){1}\s*(\[\w+]|%r\d+|%r\d+\+4){1}[,]{1}\s*(\[\w+]|%r\d+){1}[,]{0,1}\s*(\[\w+]|%r\d+){0,1}\s*$");
+                    Regex checkingIfInstructionsWithValuesAreCorrect = new Regex(@"^\s*([A-z,0-9]+){1}[:]{1}\s*(\d+)$");
+                    int startReadingInstructionsAfterPseudoOperations = 2;
+                    for (int i = startReadingInstructionsAfterPseudoOperations; i < howManyInstructionsAreInTheSet - 1; i++)
                     {
-                        bit = new StringBuilder(bits); // trebuie sa fie curat dupa fiecare linie(curat=tot stringul egal cu 0)
-                        line = readFile.ReadLine(); //citesc
-                        Match instructiuni = Instructiune.Match(line); // test check regex instructiune
-                        Match variabile = ReaderVariabile.Match(line);//test check readervariable regex
-                        if (instructiuni.Success)
+                        StringBuilder addingValuesToAWord32bit = new StringBuilder(oneInstructionToAWord32bit); 
+                        InstructionsOneByOne = readInstructionsSet.ReadLine(); 
+                        Match ifInstructionIsCorrect = checkingIfInstructionIsCorrect.Match(InstructionsOneByOne);
+                        Match ifValueInstructionIsCorrect = checkingIfInstructionsWithValuesAreCorrect.Match(InstructionsOneByOne);//test check readervariable regex
+                        if (ifInstructionIsCorrect.Success)
                         {
-                            //stringuri urmatori reprezint valori din regex pe care am obtinut din grupuri "(exp)".
-                            string typeOfMnemonica = instructiuni.Groups[2].Value; // ld, addcc, jmpl sau st // numele mnemonicei
-                            string OperandSursa1 = instructiuni.Groups[3].Value; // [word] sau %r\d+ //registru 1
-                            string OperandSursa2 = instructiuni.Groups[4].Value;// [word] sau %r\d+ //registru rd/2
-                            string OperandSursa3 = instructiuni.Groups[5].Value;// [word] sau %r\d+ //registru 3
+                            int ld_addcc_jmpl_or_st = 2;
+                            int value_or_register_number_one = 3;
+                            int value_or_register_number_two = 4;
+                            int value_or_register_number_three = 5;
+                            string typeOfMnemonica = ifInstructionIsCorrect.Groups[ld_addcc_jmpl_or_st].Value; 
+                            string OperandSursa1 = ifInstructionIsCorrect.Groups[value_or_register_number_one].Value; 
+                            string OperandSursa2 = ifInstructionIsCorrect.Groups[value_or_register_number_two].Value;
+                            string OperandSursa3 = ifInstructionIsCorrect.Groups[value_or_register_number_three].Value;
 
-                            implementMnemonicaInBits(bit, typeOfMnemonica, OperandSursa1, OperandSursa2, OperandSursa3, lineCount, ref valoarereg1, ref valoarereg2, ref valori); //metoda pentru scriere pe consola pe bituri
+                            AddingOperationsAsValuesToAWord32bit(addingValuesToAWord32bit, typeOfMnemonica, OperandSursa1, OperandSursa2, OperandSursa3, howManyInstructionsAreInTheSet, ref registerNr1Value, ref registerNr2Value, ref storeValuesThatAreInTheSet); 
 
 
                         }
                         else
-                        if (variabile.Success) //daca gaseste x:20
+                        if (ifValueInstructionIsCorrect.Success) //daca gaseste x:20
                         {
-                            char[] reverse = new char[32];
-                            string binaryValoare = "";
-                            string valoareOfEticheta = variabile.Groups[2].Value; // primim valoare (de ex. x = 20) primim atunci 20 cu ajutorul regexului
-                            binaryValoare = valoareConvertToBinary(int.Parse(valoareOfEticheta)); // decimal to binary
-                            addValoareInFormat(bit, binaryValoare, 0); // i add in the 32bit "word" binaryul
-                            reverse = bit.ToString().ToArray(); // trebuie reverse pt ca de la 0 incepe string si convertit pt ca numai cu char array se poate face asa ceva
-                            Array.Reverse(reverse);
-                            Console.WriteLine(reverse);
+                            char[] reverseCharactersInAWord32bit = new char[32];
+                            string convertedValueInBinary = "";
+                            int ETICHETA_NAME = 2;
+                            string valueOfEticheta = ifValueInstructionIsCorrect.Groups[ETICHETA_NAME].Value; 
+                            convertedValueInBinary = valueConvertToBinary(int.Parse(valueOfEticheta)); 
+                            addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, convertedValueInBinary, 0); 
+                            reverseCharactersInAWord32bit = addingValuesToAWord32bit.ToString().ToArray(); 
+                            Console.WriteLine(reverseCharactersInAWord32bit);
 
                         }
                         else
@@ -88,113 +94,113 @@ namespace Asamblor
             }   
         }
        
-        private static void implementMnemonicaInBits(StringBuilder bit, string typeOfMnemonica, string operandSursa1, string operandSursa2, string operandSursa3, int lineCount, ref string valoarereg1, ref string valoarereg2, ref int[] valori)
+        private static void AddingOperationsAsValuesToAWord32bit(StringBuilder addingValuesToAWord32bit, string typeOfMnemonica, string operandSursa1, string operandSursa2, string operandSursa3, int howManyInstructionsAreInTheSet, ref string registerNr1Value, ref string registerNr2Value, ref int[] storeValuesThatAreInTheSet)
         {
-            char[] reverse = new char[32];
+            char[] reverseCharactersInAWord32bit = new char[32];
             int count = 0;
             string binaryValoare;
             string valoare = "";
             if (typeOfMnemonica == "ld")
             {
-                bit = bitsToOne(bit, 0, 2);
-                if (operandSursa1[0] == '[') //daca primul operand sursa este [exp] 
+                addingValuesToAWord32bit = bitsToOne(addingValuesToAWord32bit, 0, 2);
+                if (operandSursa1[0] == '[') 
                 {
-                    bit[13] = '1';
+                    addingValuesToAWord32bit[13] = '1';
                     
-                   findContinutulLocatiei(operandSursa1, lineCount , ref valoare , ref count);
+                   findContinutulLocatiei(operandSursa1, howManyInstructionsAreInTheSet , ref valoare , ref count);
                     
-                    binaryValoare = valoareConvertToBinary(2048 + 4 * count);//2048* count * 4 byte
+                    binaryValoare = valueConvertToBinary(2048 + 4 * count);
                     
-                    addValoareInFormat(bit, binaryValoare, 0); //simm13 este la sfarsit adica 0
+                    addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 0); 
 
-                    operandSursa2 = operandSursa2.Trim('r', '%'); // ramana numai digit
-                    valori[int.Parse(operandSursa2) - 1] = int.Parse(valoare);//stochez valoarea primita
-                    binaryValoare = valoareConvertToBinary(int.Parse(operandSursa2));
-                    addValoareInFormat(bit, binaryValoare, 25); //registru destinatie
-                    reverse = bit.ToString().ToArray();
-                    Array.Reverse(reverse);
-                    Console.WriteLine(reverse);
+                    operandSursa2 = operandSursa2.Trim('r', '%');
+                    storeValuesThatAreInTheSet[int.Parse(operandSursa2) - 1] = int.Parse(valoare);
+                    binaryValoare = valueConvertToBinary(int.Parse(operandSursa2));
+                    addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 25); 
+                    reverseCharactersInAWord32bit = addingValuesToAWord32bit.ToString().ToArray();
+                    Array.Reverse(reverseCharactersInAWord32bit);
+                    Console.WriteLine(reverseCharactersInAWord32bit);
                     
                 }
             }
             else
             if (typeOfMnemonica == "st")
             {
-                bit = bitsToOne(bit, 0, 2);
-                bit[21] = '1';
+                addingValuesToAWord32bit = bitsToOne(addingValuesToAWord32bit, 0, 2);
+                addingValuesToAWord32bit[21] = '1';
 
                 if(operandSursa2[0]=='[')
                 {
-                    bit[13] = '1';
+                    addingValuesToAWord32bit[13] = '1';
                     operandSursa1 = operandSursa1.Trim('%', 'r');
-                    binaryValoare = valoareConvertToBinary(int.Parse(operandSursa1));
-                    addValoareInFormat(bit, binaryValoare, 25); //rd
+                    binaryValoare = valueConvertToBinary(int.Parse(operandSursa1));
+                    addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 25); //rd
 
 
-                    findContinutulLocatiei(operandSursa2, lineCount, ref valoare, ref count);
-                    binaryValoare = valoareConvertToBinary(2048 + 4 * count);
+                    findContinutulLocatiei(operandSursa2, howManyInstructionsAreInTheSet, ref valoare, ref count);
+                    binaryValoare = valueConvertToBinary(2048 + 4 * count);
 
-                    addValoareInFormat(bit, binaryValoare, 0); //simm13 
+                    addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 0); //simm13 
          
 
                 }
-                reverse = bit.ToString().ToArray();
-                Array.Reverse(reverse);
-                Console.WriteLine(reverse);
+                reverseCharactersInAWord32bit = addingValuesToAWord32bit.ToString().ToArray();
+                Array.Reverse(reverseCharactersInAWord32bit);
+                Console.WriteLine(reverseCharactersInAWord32bit);
             }
             else
             if(typeOfMnemonica == "addcc")
             {
-                bit = bitsToOne(bit, 0, 1);
-                bit[23] = '1';
+                addingValuesToAWord32bit = bitsToOne(addingValuesToAWord32bit, 0, 1);
+                addingValuesToAWord32bit[23] = '1';
                 
                 operandSursa1 = operandSursa1.Trim('%', 'r');
                 operandSursa2 = operandSursa2.Trim('%', 'r');
                 operandSursa3 = operandSursa3.Trim('%', 'r');
-                valori[int.Parse(operandSursa3) - 1] = valori[int.Parse(operandSursa1) - 1] + valori[int.Parse(operandSursa2) - 1];//valoarea lui %r3
+                storeValuesThatAreInTheSet[int.Parse(operandSursa3) - 1] = storeValuesThatAreInTheSet[int.Parse(operandSursa1) - 1] + storeValuesThatAreInTheSet[int.Parse(operandSursa2) - 1];//valoarea lui %r3
 
-                binaryValoare = valoareConvertToBinary(int.Parse(operandSursa1));
-                addValoareInFormat(bit, binaryValoare, 14); //rs1
+                binaryValoare = valueConvertToBinary(int.Parse(operandSursa1));
+                addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 14); //rs1
 
-                binaryValoare = valoareConvertToBinary(int.Parse(operandSursa2));
-                addValoareInFormat(bit, binaryValoare, 0);//rs2
+                binaryValoare = valueConvertToBinary(int.Parse(operandSursa2));
+                addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 0);//rs2
 
-                binaryValoare = valoareConvertToBinary(int.Parse(operandSursa3));
-                addValoareInFormat(bit, binaryValoare, 25);//rd
+                binaryValoare = valueConvertToBinary(int.Parse(operandSursa3));
+                addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 25);//rd
 
             
-                reverse = bit.ToString().ToArray();
-                Array.Reverse(reverse);
-                Console.WriteLine(reverse);
+                reverseCharactersInAWord32bit = addingValuesToAWord32bit.ToString().ToArray();
+                Array.Reverse(reverseCharactersInAWord32bit);
+                Console.WriteLine(reverseCharactersInAWord32bit);
                 
 
             }
             else
                 if(typeOfMnemonica == "jmpl")
             {
-                bit = bitsToOne(bit, 0, 1);
-                bit = bitsToOne(bit, 7, 10);
-                bit[13] = '1';
+                addingValuesToAWord32bit = bitsToOne(addingValuesToAWord32bit, 0, 1);
+                addingValuesToAWord32bit = bitsToOne(addingValuesToAWord32bit, 7, 10);
+                addingValuesToAWord32bit[13] = '1';
                 
                 operandSursa2 = operandSursa2.Trim('%', 'r');
 
-                binaryValoare = valoareConvertToBinary(int.Parse(operandSursa2));
-                addValoareInFormat(bit, binaryValoare, 29); //rd
+                binaryValoare = valueConvertToBinary(int.Parse(operandSursa2));
+                addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, binaryValoare, 29); //rd
 
-                addValoareInFormat(bit, "1111", 14);//rs1
+                addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, "1111", 14);//rs1
 
-                addValoareInFormat(bit, "100", 0); //simm13
+                addSpecificValuesInAWord32Bit(addingValuesToAWord32bit, "100", 0); //simm13
 
-                reverse = bit.ToString().ToArray();
-                Array.Reverse(reverse);
-                Console.WriteLine(reverse);
+                reverseCharactersInAWord32bit = addingValuesToAWord32bit.ToString().ToArray();
+                Array.Reverse(reverseCharactersInAWord32bit);
+                Console.WriteLine(reverseCharactersInAWord32bit);
             }
 
                 
 
         }
        
-        private static void addValoareInFormat(StringBuilder bit, string binaryValoare, int EndIndex)
+        private static void addSpecificValuesInAWord32Bit(StringBuilder bit, string binaryValoare, int EndIndex)
         {
             int j = 0;
           
@@ -208,7 +214,7 @@ namespace Asamblor
         }
 
        
-        private static string valoareConvertToBinary(int valoare)
+        private static string valueConvertToBinary(int valoare)
         {
             int rest;
             string converted = "";
@@ -262,21 +268,21 @@ namespace Asamblor
 
        
 
-        public static int LinesCount(Regex pseudoEnd)
+        public static int countInstructionsInTheSetAndCheckPseudoOperationEnd(Regex checkingPseudoOperationEndIsInTheSet)
         {
-            TextReader code = new StreamReader("data.in");
-            int count = 0, tempCount =0;
-            string line = "";
+            TextReader readInstructionsOneByOne = new StreamReader("data.in");
+            int countingInstructionsInSet = 0, checkingIfEndOperationIsInTheEndOfTheSet =0;
+            string instruction = "";
             bool ok = true;
             while (ok)
             {
-                line = code.ReadLine();
-                count++;
+                instruction = readInstructionsOneByOne.ReadLine();
+                countingInstructionsInSet++;
                 
-                if (line == null)
+                if (instruction == null)
                 {
-                    if (count - tempCount == 1) // if .end is at the end
-                        return count - 1;
+                    if (countingInstructionsInSet - checkingIfEndOperationIsInTheEndOfTheSet == 1) 
+                        return countingInstructionsInSet - 1;
                     else
                     {
 
@@ -286,9 +292,9 @@ namespace Asamblor
                 }
                 else
                 {
-                    Match matchEnd = pseudoEnd.Match(line); // daca gasesc .end oriunde in file
+                    Match matchEnd = checkingPseudoOperationEndIsInTheSet.Match(instruction);
                     if (matchEnd.Success)
-                        tempCount = count;
+                        checkingIfEndOperationIsInTheEndOfTheSet = countingInstructionsInSet;
                 }
             }
             return -1;
