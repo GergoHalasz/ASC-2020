@@ -26,14 +26,14 @@ namespace Asamblor
 
             Regex checkingPseudoOperationEndIsInTheSet = new Regex(@"^\s*(.end)\s*$");
 
-            int howManyInstructionsAreInTheSet = countInstructionsInTheSetAndCheckPseudoOperationEnd(checkingPseudoOperationEndIsInTheSet);
+            int ALL_INSTRUCTIONS_IN_THE_SET = countInstructionsInTheSetAndCheckPseudoOperationEnd(checkingPseudoOperationEndIsInTheSet);
             
             int PSEUDO_OPERATION_NOT_EXIST = -1;
 
-            if (howManyInstructionsAreInTheSet != PSEUDO_OPERATION_NOT_EXIST)
+            if (ALL_INSTRUCTIONS_IN_THE_SET != PSEUDO_OPERATION_NOT_EXIST)
             {
 
-                int[] storeValuesThatAreInTheSet = new int[howManyInstructionsAreInTheSet]; 
+                int[] storeValuesThatAreInTheSet = new int[ALL_INSTRUCTIONS_IN_THE_SET]; 
                                                                             
                 InstructionsOneByOne = readInstructionsSet.ReadLine();
                 Match pseudoOperationBeginIsInTheSet = checkIfPseudoOperationBeginIsInTheSet.Match(InstructionsOneByOne);
@@ -50,7 +50,7 @@ namespace Asamblor
                     Regex checkingIfInstructionIsCorrect = new Regex(@"^\s*([A-z,0-9]+[:]{1}){0,1}\s*(ld|addcc|jmpl|st){1}\s*(\[\w+]|%r\d+|%r\d+\+4){1}[,]{1}\s*(\[\w+]|%r\d+){1}[,]{0,1}\s*(\[\w+]|%r\d+){0,1}\s*$");
                     Regex checkingIfInstructionsWithValuesAreCorrect = new Regex(@"^\s*([A-z,0-9]+){1}[:]{1}\s*(\d+)$");
                     int startReadingInstructionsAfterPseudoOperations = 2;
-                    for (int i = startReadingInstructionsAfterPseudoOperations; i < howManyInstructionsAreInTheSet - 1; i++)
+                    for (int i = startReadingInstructionsAfterPseudoOperations; i < ALL_INSTRUCTIONS_IN_THE_SET - 1; i++)
                     {
                         StringBuilder addingValuesToAWord32bit = new StringBuilder(oneInstructionToAWord32bit); 
                         InstructionsOneByOne = readInstructionsSet.ReadLine(); 
@@ -67,7 +67,7 @@ namespace Asamblor
                             string OperandSursa2 = ifInstructionIsCorrect.Groups[value_or_register_number_two].Value;
                             string OperandSursa3 = ifInstructionIsCorrect.Groups[value_or_register_number_three].Value;
 
-                            AddingOperationsAsValuesToAWord32bit(addingValuesToAWord32bit, typeOfMnemonica, OperandSursa1, OperandSursa2, OperandSursa3, howManyInstructionsAreInTheSet, ref registerNr1Value, ref registerNr2Value, ref storeValuesThatAreInTheSet); 
+                            AddingOperationsAsValuesToAWord32bit(addingValuesToAWord32bit, typeOfMnemonica, OperandSursa1, OperandSursa2, OperandSursa3, ALL_INSTRUCTIONS_IN_THE_SET, ref registerNr1Value, ref registerNr2Value, ref storeValuesThatAreInTheSet); 
 
 
                         }
